@@ -29,8 +29,8 @@ min_delta = 1e-4 # Minimum change to qualify as an improvement
 train_losses = [] # List to store training losses
 val_losses = [] # List to store validation losses
 
-train_accuracy = [] # List to store training accuracies
-val_accuracy = [] # List to store validation accuracies
+train_acc = [] # List to store training accuracies
+val_acc = [] # List to store validation accuracies
 
 epochs = 50 # Number of epochs to train the model
 
@@ -72,8 +72,8 @@ for epoch in range(epochs): # Loop over epochs
 
     train_losses.append(train_loss) # Append training loss to list
     val_losses.append(val_loss) # Append validation loss to list
-    train_accuracy.append(train_accuracy) # Append training accuracy to list
-    val_accuracy.append(val_accuracy) # Append validation accuracy to list
+    train_acc.append(train_accuracy) # Append training accuracy to list
+    val_acc.append(val_accuracy) # Append validation accuracy to list
     end = time.time() # End time for epoch
     print(f"- Epoch {epoch+1}\n\tTime elapsed: {end - start:.4f} seconds,\n\tTrain Loss: {train_loss:.4f},\n\tTrain Accuracy: {train_accuracy:.2f}%,\n\tVal Loss: {val_loss:.4f},\n\tVal Accuracy: {val_accuracy:.2f}%") # Print training and validation loss and accuracy
 
@@ -105,8 +105,8 @@ plt.grid(True) # Show grid
 plt.savefig("out/graphs/loss_plot.png") # Save the plot
 
 # Plot training and validation accuracy
-plt.plot(train_accuracy, label='Train Accuracy') # Plot training accuracy
-plt.plot(val_accuracy, label='Validation Accuracy') # Plot validation accuracy
+plt.plot(train_acc, label='Train Accuracy') # Plot training accuracy
+plt.plot(val_acc, label='Validation Accuracy') # Plot validation accuracy
 plt.title('Training and Validation Accuracy') # Set title
 plt.xlabel('Epochs') # Set x-axis label
 plt.ylabel('Accuracy (%)') # Set y-axis label
