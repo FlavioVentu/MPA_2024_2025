@@ -103,7 +103,6 @@ plt.ylabel('Loss') # Set y-axis label
 plt.legend() # Show legend
 plt.grid(True) # Show grid
 plt.savefig("out/graphs/loss_plot.png") # Save the plot
-plt.show() # Show the plot
 
 # Plot training and validation accuracy
 plt.plot(train_accuracy, label='Train Accuracy') # Plot training accuracy
@@ -114,6 +113,5 @@ plt.ylabel('Accuracy (%)') # Set y-axis label
 plt.legend() # Show legend
 plt.grid(True) # Show grid
 plt.savefig("out/graphs/accuracy_plot.png") # Save the plot
-plt.show() # Show the plot
 
 print("Training complete!") # Print training complete message
