@@ -1,18 +1,18 @@
 import torch
 from torchvision.datasets import ImageFolder
 from torch.utils.data import Subset
-from models.vehicle_model import get_model
+from model.vehicle_model import get_model
 import matplotlib.pyplot as plt
 import json
 import numpy as np
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # Check if GPU is available and set the device accordingly
 model = get_model().to(device) # Load the model and move it to the appropriate device
-model.load_state_dict(torch.load("models/vehicle_model.pth")) # Load the best model
+model.load_state_dict(torch.load("out/vehicle_model.pth")) # Load the best model
 print(f"Model loaded on {device}") # Print model and device information
 model.eval() # Set the model to evaluation mode
 
-with open("test/test_set.json", "r") as f: # Load test set indices from JSON file
+with open("out/test_set.json", "r") as f: # Load test set indices from JSON file
     test_indices = json.load(f) # Read the indices from the file
 
 dataset = ImageFolder(root="data/Vehicle") # Load the dataset using ImageFolder
@@ -67,7 +67,7 @@ while True:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=dataset.classes)
             disp.plot(cmap=plt.cm.Blues)
             plt.title("Matrice di Confusione")
-            plt.savefig("graphs/confusion_matrix.png") # Save the plot
+            plt.savefig("out/graphs/confusion_matrix.png") # Save the plot
             plt.show()
         else:
             print("Nessuna predizione effettuata, impossibile mostrare la matrice di confusione.")

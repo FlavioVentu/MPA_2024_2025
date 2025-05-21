@@ -1,10 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from models.vehicle_model import get_model
-from utils.dataset import load_data
+from model.vehicle_model import get_model
+from utils.prepare_data import load_data
 import matplotlib.pyplot as plt
 import time
+import sys
+import os
+
+if os.getenv("GITHUB_ACTIONS") == "true": # Check if running in GitHub Actions and suppress output
+    sys.stdout = open(os.devnull, 'w')
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # Check if GPU is available and set the device accordingly else use CPU
 
@@ -23,8 +29,13 @@ min_delta = 1e-4 # Minimum change to qualify as an improvement
 train_losses = [] # List to store training losses
 val_losses = [] # List to store validation losses
 
+train_accuracy = [] # List to store training accuracies
+val_accuracy = [] # List to store validation accuracies
+
+epochs = 50 # Number of epochs to train the model
+
 print("Starting training...") # Print training start message
-for epoch in range(50): # Loop over epochs
+for epoch in range(epochs): # Loop over epochs
     start = time.time() # Start time for epoch
     model.train() # Set the model to training mode
     train_loss, correct, total = 0, 0, 0 # Initialize training loss and accuracy variables
@@ -61,6 +72,8 @@ for epoch in range(50): # Loop over epochs
 
     train_losses.append(train_loss) # Append training loss to list
     val_losses.append(val_loss) # Append validation loss to list
+    train_accuracy.append(train_accuracy) # Append training accuracy to list
+    val_accuracy.append(val_accuracy) # Append validation accuracy to list
     end = time.time() # End time for epoch
     print(f"- Epoch {epoch+1}\n\tTime elapsed: {end - start:.4f} seconds,\n\tTrain Loss: {train_loss:.4f},\n\tTrain Accuracy: {train_accuracy:.2f}%,\n\tVal Loss: {val_loss:.4f},\n\tVal Accuracy: {val_accuracy:.2f}%") # Print training and validation loss and accuracy
 
@@ -70,7 +83,7 @@ for epoch in range(50): # Loop over epochs
 
     if best_val_loss - val_loss > min_delta: # Check if validation loss improved
         best_val_loss = val_loss # Update best validation loss
-        torch.save(model.state_dict(), "models/vehicle_model.pth") # Save the model
+        torch.save(model.state_dict(), "out/vehicle_model.pth") # Save the model
         print("Validation loss improved, saving model...")
         counter = 0 # Reset counter
     else:
@@ -89,5 +102,18 @@ plt.xlabel('Epochs') # Set x-axis label
 plt.ylabel('Loss') # Set y-axis label
 plt.legend() # Show legend
 plt.grid(True) # Show grid
-plt.savefig("graphs/loss_plot.png") # Save the plot
+plt.savefig("out/graphs/loss_plot.png") # Save the plot
 plt.show() # Show the plot
+
+# Plot training and validation accuracy
+plt.plot(train_accuracy, label='Train Accuracy') # Plot training accuracy
+plt.plot(val_accuracy, label='Validation Accuracy') # Plot validation accuracy
+plt.title('Training and Validation Accuracy') # Set title
+plt.xlabel('Epochs') # Set x-axis label
+plt.ylabel('Accuracy (%)') # Set y-axis label
+plt.legend() # Show legend
+plt.grid(True) # Show grid
+plt.savefig("out/graphs/accuracy_plot.png") # Save the plot
+plt.show() # Show the plot
+
+print("Training complete!") # Print training complete message
