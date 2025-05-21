@@ -4,6 +4,8 @@ from .transforms import get_train_transforms, get_val_test_transforms
 from torch.utils.data import Subset
 from random import shuffle
 import json
+import os
+
 
 def load_data(data_dir, batch_size=16): # Function to load data
     dataset = ImageFolder(root=data_dir) # Load dataset using ImageFolder and custom transforms
@@ -21,6 +23,7 @@ def load_data(data_dir, batch_size=16): # Function to load data
     train_set = Subset(dataset, train_indices) # Create a subset for training
     val_set = Subset(dataset, val_indices) # Create a subset for validation
 
+    os.makedirs("out", exist_ok=True)  # crea la directory se non c'è
     with open("out/test_set.json", "w") as f: # Save test set indices to a JSON file
         json.dump(test_indices, f)
 
