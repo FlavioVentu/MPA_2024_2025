@@ -93,6 +93,7 @@ for epoch in range(epochs): # Loop over epochs
             print("Early stopping!") # Print early stopping message
             break
 
+os.makedirs("out/graphs", exist_ok=True) # Create output directory for graphs if it doesn't exist
 
 # Plot training and validation loss
 plt.plot(train_losses, label='Train Loss') # Plot training loss
