@@ -27,8 +27,10 @@ best_val_loss = float('inf') # Initialize best validation loss to infinity
 patience = 4 # Set patience for early stopping
 unfreeze_patience = 3 # Set patience for unfreezing
 red_patience = 2 # Set patience for learning rate reduction
+ofit_patience = 2 # Set patience for overfitting
 counter = 0 # Initialize counter for early stopping
 min_delta = 1e-4 # Minimum change to qualify as an improvement
+ofit_counter = 0 # Initialize counter for overfitting
 
 train_losses = [] # List to store training losses
 val_losses = [] # List to store validation losses
@@ -85,7 +87,15 @@ for epoch in range(epochs): # Loop over epochs
     # Early stopping
     # Check if validation loss improved
 
-    if best_val_loss - val_loss > min_delta: # Check if validation loss improved
+    if val_loss > train_loss: # Check if validation loss is greater than training loss
+        ofit_counter += 1 # Increment overfitting counter
+        if ofit_counter >= ofit_patience:
+            print("Overfitting detected, stopping training!")
+            break
+        print(f"Possible overfitting detected, incrementing overfitting counter: {ofit_counter}/{ofit_patience}")
+
+
+    elif best_val_loss - val_loss > min_delta: # Check if validation loss improved
         best_val_loss = val_loss # Update best validation loss
         torch.save(model.state_dict(), "out/vehicle_model.pth") # Save the model
         print("Validation loss improved, saving model...")
