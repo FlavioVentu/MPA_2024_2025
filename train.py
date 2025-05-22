@@ -20,9 +20,11 @@ train_loader, val_loader = load_data("data/Vehicle") # Load the data using the c
 
 criterion = nn.BCEWithLogitsLoss() # Define the loss function
 optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5) # Define the optimizer
+reduce_done = False # Flag to check if learning rate has been reduced
 
 best_val_loss = float('inf') # Initialize best validation loss to infinity
 patience = 3 # Set patience for early stopping
+red_patience = 2 # Set patience for learning rate reduction
 counter = 0 # Initialize counter for early stopping
 min_delta = 1e-4 # Minimum change to qualify as an improvement
 
@@ -32,7 +34,7 @@ val_losses = [] # List to store validation losses
 train_acc = [] # List to store training accuracies
 val_acc = [] # List to store validation accuracies
 
-epochs = 50 # Number of epochs to train the model
+epochs = 100 # Number of epochs to train the model
 
 print("Starting training...") # Print training start message
 for epoch in range(epochs): # Loop over epochs
@@ -89,6 +91,15 @@ for epoch in range(epochs): # Loop over epochs
     else:
         counter += 1 # Increment counter if validation loss did not improve
         print(f"No improvement in validation loss, early stopping counter: {counter}/{patience}")
+        
+        if counter >= red_patience and not reduce_done:
+            print("Reducing learning rate...")
+            for param_group in optimizer.param_groups: # Loop over optimizer parameter groups
+                param_group['lr'] *= 0.5 # Reduce learning rate by half (5-e5)
+            reduce_done = True # Set reduce_done to True
+            counter = 0 # Reset counter
+
+        # Early stopping
         if counter >= patience: # Check if patience exceeded
             print("Early stopping!") # Print early stopping message
             break
