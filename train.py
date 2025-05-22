@@ -20,12 +20,14 @@ train_loader, val_loader = load_data("data/Vehicle") # Load the data using the c
 
 criterion = nn.BCEWithLogitsLoss() # Define the loss function
 optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5) # Define the optimizer
+unfreeze_done = False # Flag to indicate if the model is unfrozen
+reduce_done = False # Flag to indicate if the learning rate has been reduced
 
 best_val_loss = float('inf') # Initialize best validation loss to infinity
-patience = 3 # Set patience for early stopping
+patience = 4 # Set patience for early stopping
+unfreeze_patience = 3 # Set patience for unfreezing
 red_patience = 2 # Set patience for learning rate reduction
 counter = 0 # Initialize counter for early stopping
-reduce_counter = 0 # Initialize counter for learning rate reduction
 min_delta = 1e-4 # Minimum change to qualify as an improvement
 
 train_losses = [] # List to store training losses
@@ -92,12 +94,21 @@ for epoch in range(epochs): # Loop over epochs
         counter += 1 # Increment counter if validation loss did not improve
         print(f"No improvement in validation loss, early stopping counter: {counter}/{patience}")
 
-        if counter >= red_patience and reduce_counter < 3:
+        if counter >= red_patience and not reduce_done:
             print("Reducing learning rate...")
             for param_group in optimizer.param_groups: # Loop over optimizer parameter groups
-                param_group['lr'] *= 0.5 # Reduce learning rate by half for 3 times
-            reduce_counter += 1 # Increment reduce counter
+                param_group['lr'] *= 0.5 # Reduce learning rate by half (5-e5)
+            reduce_done = True # Set reduce_done to True if unfreeze_done is True
             counter = 0 # Reset counter
+
+        if counter >= unfreeze_patience and not unfreeze_done: # Check if patience for unfreezing exceeded
+            print("Unfreezing last layer of the model...")
+            for name, param in model.named_parameters():
+                if "layer4" in name:
+                    param.requires_grad = True # Unfreeze the last layer
+            optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-5, weight_decay=1e-5) # Reinitialize optimizer with a lower learning rate
+            unfreeze_done = True
+            counter = 0  # Reset counter
 
         # Early stopping
         if counter >= patience: # Check if patience exceeded
