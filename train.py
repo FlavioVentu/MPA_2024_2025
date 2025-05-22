@@ -104,6 +104,7 @@ plt.ylabel('Loss') # Set y-axis label
 plt.legend() # Show legend
 plt.grid(True) # Show grid
 plt.savefig("out/graphs/loss_plot.png") # Save the plot
+plt.clf() # Clear the plot for the next graph
 
 # Plot training and validation accuracy
 plt.plot(train_acc, label='Train Accuracy') # Plot training accuracy
@@ -113,6 +114,8 @@ plt.xlabel('Epochs') # Set x-axis label
 plt.ylabel('Accuracy (%)') # Set y-axis label
 plt.legend() # Show legend
 plt.grid(True) # Show grid
+plt.ylim(60, 100) # Set y-axis limits
+plt.yticks(range(60, 101, 2)) # Set y-axis ticks
 plt.savefig("out/graphs/accuracy_plot.png") # Save the plot
 
 print("Training complete!") # Print training complete message

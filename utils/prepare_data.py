@@ -6,6 +6,9 @@ from random import shuffle
 import json
 import os
 
+workers = 0 # Number of workers for DataLoader
+if os.getenv("GITHUB_ACTIONS") == "true": # Check if running in GitHub Actions and set workers to 0
+    workers = 1 # Set workers to 1 for GitHub Actions
 
 def load_data(data_dir, batch_size=16): # Function to load data
     dataset = ImageFolder(root=data_dir) # Load dataset using ImageFolder and custom transforms
@@ -31,7 +34,7 @@ def load_data(data_dir, batch_size=16): # Function to load data
     train_set.dataset.transform = get_train_transforms() # Apply training transforms
     val_set.dataset.transform = get_val_test_transforms() # Apply validation transforms
 
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=0) # Create DataLoader for training set
-    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=0) # Create DataLoader for validation set
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=workers) # Create DataLoader for training set
+    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=workers) # Create DataLoader for validation set
 
     return train_loader, val_loader # Return DataLoaders for train, val, and test sets
