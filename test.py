@@ -41,65 +41,90 @@ total = 0
 y_true = []
 y_pred = []
 
-# Loop principale
-while True:
-    # Scegli casualmente 4 immagini dal test set
-    indices = np.random.choice(len(test_set), 4, replace=False)
-    images = []
-    labels = []
-    for idx in indices:
+# --- Modalità manuale o automatica ---
+mode = input("Scegli modalità: [m]anuale o [a]utomatica? (m/a): ").strip().lower()
+if mode == "a":
+    # --- Modalità automatica: testa tutte le immagini e mostra la matrice di confusione ---
+    print("Esecuzione in modalità automatica...")
+    for idx in range(len(test_set)):
         img, label = test_set[idx]
-        # Dataset senza trasformazioni, quindi le applichiamo ora per la rete
-        img_t = transform(img)
-        images.append(img)
-        labels.append(dataset.classes[label])  # nome della classe
-    
-    # Mostra immagini a schermo
-    show_images(images, labels)
-    
-    # Chiedi all’utente quale immagine selezionare (1-4)
-    choice = input("Seleziona un'immagine da 1 a 4 (o q per uscire): ")
-    if choice.lower() == 'q':
-        # Calcola e mostra la matrice di confusione
+        img_t = transform(img).unsqueeze(0).to(device)
+        with torch.no_grad():
+            output = model(img_t)
+            prob = torch.sigmoid(output).item()
+            pred = 1 if prob > 0.5 else 0
+        y_true.append(label)
+        y_pred.append(pred)
+        if pred == label:
+            correct += 1
+        total += 1
+    print(f"Accuracy: {correct}/{total} = {correct/total:.2f}")
+    cm = confusion_matrix(y_true, y_pred, labels=list(range(len(dataset.classes))))
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=dataset.classes)
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title("Matrice di Confusione")
+    plt.savefig("out/graphs/confusion_matrix.png")
+    plt.show()
+else:
+    # --- Modalità manuale (come prima) ---
+    while True:
+        # Scegli casualmente 4 immagini dal test set
+        indices = np.random.choice(len(test_set), 4, replace=False)
+        images = []
+        labels = []
+        for idx in indices:
+            img, label = test_set[idx]
+            # Dataset senza trasformazioni, quindi le applichiamo ora per la rete
+            img_t = transform(img)
+            images.append(img)
+            labels.append(dataset.classes[label])  # nome della classe
+        
+        # Mostra immagini a schermo
+        show_images(images, labels)
+        
+        # Chiedi all’utente quale immagine selezionare (1-4)
+        choice = input("Seleziona un'immagine da 1 a 4 (o q per uscire): ")
+        if choice.lower() == 'q':
+            # Calcola e mostra la matrice di confusione
 
-        if total > 0:
-            cm = confusion_matrix(y_true, y_pred, labels=list(range(len(dataset.classes))))
-            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=dataset.classes)
-            disp.plot(cmap=plt.cm.Blues)
-            plt.title("Matrice di Confusione")
-            plt.savefig("out/graphs/confusion_matrix.png") # Save the plot
-            plt.show()
+            if total > 0:
+                cm = confusion_matrix(y_true, y_pred, labels=list(range(len(dataset.classes))))
+                disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=dataset.classes)
+                disp.plot(cmap=plt.cm.Blues)
+                plt.title("Matrice di Confusione")
+                plt.savefig("out/graphs/confusion_matrix.png") # Save the plot
+                plt.show()
+            else:
+                print("Nessuna predizione effettuata, impossibile mostrare la matrice di confusione.")
+            break
+        try:
+            choice = int(choice)
+            assert 1 <= choice <= 4
+        except:
+            print("Input non valido, riprova.")
+            continue
+
+        # Prendi l’immagine scelta e prepara per modello
+        selected_idx = indices[choice-1]
+        img, label = test_set[selected_idx]
+        img_t = transform(img).unsqueeze(0).to(device)  # aggiungi batch dim
+        
+        # Predict
+        with torch.no_grad():
+            output = model(img_t)
+            prob = torch.sigmoid(output).item()
+            pred = 1 if prob > 0.5 else 0
+        
+        print(f"Predizione modello: {dataset.classes[pred]}, Etichetta vera: {dataset.classes[label]}")
+
+        # Aggiorna accuratezza
+        if pred == label:
+            print("Corretto!")
+            correct += 1
         else:
-            print("Nessuna predizione effettuata, impossibile mostrare la matrice di confusione.")
-        break
-    try:
-        choice = int(choice)
-        assert 1 <= choice <= 4
-    except:
-        print("Input non valido, riprova.")
-        continue
+            print("Sbagliato!")
+        total += 1
+        print(f"Accuracy attuale: {correct}/{total} = {correct/total:.2f}\n")
 
-    # Prendi l’immagine scelta e prepara per modello
-    selected_idx = indices[choice-1]
-    img, label = test_set[selected_idx]
-    img_t = transform(img).unsqueeze(0).to(device)  # aggiungi batch dim
-    
-    # Predict
-    with torch.no_grad():
-        output = model(img_t)
-        prob = torch.sigmoid(output).item()
-        pred = 1 if prob > 0.5 else 0
-    
-    print(f"Predizione modello: {dataset.classes[pred]}, Etichetta vera: {dataset.classes[label]}")
-
-    # Aggiorna accuratezza
-    if pred == label:
-        print("Corretto!")
-        correct += 1
-    else:
-        print("Sbagliato!")
-    total += 1
-    print(f"Accuracy attuale: {correct}/{total} = {correct/total:.2f}\n")
-
-    y_true.append(label)
-    y_pred.append(pred)
+        y_true.append(label)
+        y_pred.append(pred)
